@@ -14,6 +14,11 @@ ReplaySubject
         s2         ---------------------^r-x---j------|----------
 */
 
+
+/*
+  Original example: https://github.com/btroncone/learn-rxjs/blob/master/subjects/README.md
+*/
+
 console.clear();
 import { Subject, AsyncSubject, BehaviorSubject, ReplaySubject } from 'rxjs';
 
@@ -22,40 +27,60 @@ const asyncSubject = new AsyncSubject();
 const behaviorSubject = new BehaviorSubject('a');
 const replaySubject = new ReplaySubject(2);
 
-const subjects = [subject, asyncSubject, behaviorSubject, replaySubject];
-const log = (subjectType: any) => (e: any) => console.log(`${subjectType}: ${e}`);
+const subjects = [
+  subject,
+  asyncSubject,
+  behaviorSubject,
+  replaySubject
+];
 
-console.log('SUBSCRIBE 1');
-subject.subscribe(log('s1 subject'));
-asyncSubject.subscribe(log('s1 asyncSubject'));
-behaviorSubject.subscribe(log('s1 behaviorSubject'));
-replaySubject.subscribe(log('s1 replaySubject'));
+const log = (subjectType: string) => (e: any) => console.log(`${subjectType}: ${e}`);
 
-console.log('\nNEXT(r)');
-subjects.forEach(o => o.next('r'));
+/**
+ * Subscribes all subjects
+ * @param  {string} subsName
+ */
+const subscribe = (subsName: string) => {
+  console.log(`\nSUBSCRIBE ${subsName}`);
+  subject.subscribe(log(`${subsName} subject`));
+  asyncSubject.subscribe(log(`${subsName} asyncSubject`));
+  behaviorSubject.subscribe(log(`${subsName} behaviorSubject`));
+  replaySubject.subscribe(log(`${subsName} replaySubject`));
+};
 
-console.log('\nNEXT(x)');
-subjects.forEach(o => o.next('x'));
+/**
+ * Triggers 'next' in all subjects
+ * @param  {string} value
+ */
+const next = (value: string) => {
+  console.log(`\nNEXT(${value})`);
+  subjects.forEach(o => o.next(value));
+}
 
-console.log('\nSUBSCRIBE 2');
-subject.subscribe(log('s2 subject'));
-asyncSubject.subscribe(log('s2 asyncSubject'));
-behaviorSubject.subscribe(log('s2 behaviorSubject'));
-replaySubject.subscribe(log('s2 replaySubject'));
+/**
+ * Completes all subjects
+ * @param  {} =>subjects.forEach(o=>o.next('s'
+ */
+const complete = () => {
+  console.log('\nCOMPLETE');
+  subjects.forEach(o => o.complete());
+}
 
-console.log('\nNEXT(j)');
-subjects.forEach(o => o.next('j'));
+subscribe('s1');
+next('r');
+next('x');
 
-console.log('\nCOMPLETE');
-subjects.forEach(o => o.complete());
+subscribe('s2');
+next('j');
 
-console.log('\nNEXT(s)');
-subjects.forEach(o => o.next('s'));
+complete();
+
+next('s');
 
 /*
 OUTPUT:
 
-SUBSCRIBE 1
+SUBSCRIBE s1
 s1 behaviorSubject: a
 
 NEXT(r)
@@ -68,7 +93,7 @@ s1 subject: x
 s1 behaviorSubject: x
 s1 replaySubject: x
 
-SUBSCRIBE 2
+SUBSCRIBE s2
 s2 behaviorSubject: x
 s2 replaySubject: r
 s2 replaySubject: x
